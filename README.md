@@ -1,247 +1,102 @@
-# Sistema de Gestión de Proyectos de Construcción
-## Proyecto ABP - Base de Datos en MySQL para Arquitectos e Ingenieros Civiles
+BUILDARQ – Gestión de Proyectos de Construcción
 
----
+Proyecto ABP centrado en crear un modelo de base de datos que administre de forma efectiva la gestión de proyectos de construcción. Permite registrar clientes, empleados, materiales, proyectos y sus asignaciones. Además, controla el uso de materiales, calcula presupuestos y genera reportes clave para la toma de decisiones. Es ideal para empresas constructoras, estudios de arquitectura o ingenierías civiles.
 
-##  Contexto del Problema
+Integrantes:
 
-### Escenario General
-En el ámbito de la arquitectura y la ingeniería civil, los profesionales trabajan simultáneamente en múltiples proyectos de construcción. Cada uno de estos proyectos implica manejar cronogramas, planos, presupuestos, personal técnico, proveedores, materiales de construcción y documentos legales.
+• Triviño
+• Aumala Domenika
 
-Actualmente, gran parte de esta información se administra de manera desorganizada, utilizando herramientas dispersas como hojas de cálculo, correos electrónicos o documentos físicos. Esta situación genera errores, pérdida de datos, retrasos y sobrecostos en las obras.
+1. Instrucciones y objetivos del proyecto
 
-### Problemática Planteada
-Existe la necesidad de centralizar y organizar la información clave de los proyectos de construcción para facilitar su gestión, seguimiento y control. Una base de datos adecuada permitirá almacenar y consultar datos como:
+Este documento contiene el desarrollo completo del proyecto ABP: análisis, diseño e implementación de una base de datos en MySQL para la gestión de proyectos de construcción. Incluye:
 
-- **Información general del proyecto**: cliente, fechas, ubicación
-- **Inventario de materiales por obra**
-- **Registro de tareas y responsables**
-- **Documentación técnica como planos o licencias**
-- **Presupuestos y gastos detallados**
-- **Personal involucrado y proveedores**
+Contexto del problema y necesidades de información.
 
-### Aspectos que se Pretenden Resolver
+Modelo conceptual (diagrama entidad-relación y descripción de entidades/relaciones).
 
-**Problemas identificados:**
-- ❌ **Desorganización de la información de obra**: Datos dispersos en múltiples herramientas
-- ❌ **Falta de control del inventario de materiales**: No hay seguimiento en tiempo real
-- ❌ **Dificultad para acceder rápidamente a documentos técnicos**: Planos y licencias mal archivados
-- ❌ **Seguimiento deficiente del cronograma de tareas**: Retrasos no controlados
-- ❌ **Falta de trazabilidad de gastos y presupuestos**: Sobrecostos inesperados
+Modelo físico (scripts DDL para crear la base de datos y tablas con integridad referencial).
 
-**Necesidades de información:**
-- ✅ Registro completo de proyectos con sus características
-- ✅ Control de inventario de materiales en tiempo real
-- ✅ Seguimiento detallado de cronogramas y tareas
-- ✅ Gestión de personal técnico y proveedores
-- ✅ Control financiero de presupuestos vs gastos reales
-- ✅ Archivo organizado de documentación técnica
+Procedimientos almacenados para carga de datos con validaciones y uso de transacciones.
 
----
+Consultas SQL que resuelven los informes planteados en el contexto.
 
-##  Modelo Conceptual (Diagrama Relacional)
+Instrucciones para evidenciar con capturas y estructura recomendada del repositorio en GitHub.
 
-### Entidades Principales
+2. Contexto del problema
 
-| Entidad | Descripción | Atributos Clave |
-|---------|-------------|-----------------|
-| **PROYECTOS** | Información general de cada obra | codigo_proyecto, nombre, cliente, presupuesto |
-| **PERSONAL** | Trabajadores y especialistas | cedula, nombre, especialidad, salario_hora |
-| **MATERIALES** | Inventario de materiales | codigo_material, nombre, precio_unitario |
-| **TAREAS** | Actividades del cronograma | nombre_tarea, fechas, prioridad, estado |
-| **ASIGNACIONES** | Personal asignado a tareas | horas_asignadas, horas_trabajadas |
-| **INVENTARIO** | Materiales por proyecto | cantidad_necesaria, disponible, utilizada |
-| **GASTOS** | Control financiero | monto, tipo_gasto, fecha, factura |
-| **DOCUMENTOS** | Archivos técnicos | nombre_documento, tipo, version |
+Escenario general: Una empresa constructora requiere administrar sus proyectos, clientes, empleados y materiales de manera centralizada. Se necesita una base de datos que permita:
 
-### Diagrama Entidad-Relación
+Registrar clientes y sus datos (identificación, contacto, dirección, teléfono).
 
-```
-                    [PERSONAL]
-                        │
-                        │ N
-                        │
-                        │ 1
-                 [ASIGNACIONES]
-                        │
-                        │ N  
-                        │
-                        │ 1
-    [MATERIALES] ── [INVENTARIO] ── [PROYECTOS] ── [TAREAS]
-          1│N           1│N              1│N         1│N
-                                         │
-                                         │ 1
-                                         │
-                                         │ N
-                                    [GASTOS]
-                                         │
-                                         │ 1
-                                         │
-                                         │ N  
-                                   [DOCUMENTOS]
-```
+Registrar proyectos (nombre, descripción, fechas, presupuesto y cliente asociado).
 
-### Relaciones Principales
-- PROYECTOS (1) ↔ (N) TAREAS
-- PROYECTOS (1) ↔ (N) INVENTARIO  
-- PROYECTOS (1) ↔ (N) GASTOS
-- PROYECTOS (1) ↔ (N) DOCUMENTOS
-- TAREAS (1) ↔ (N) ASIGNACIONES
-- PERSONAL (1) ↔ (N) ASIGNACIONES
-- MATERIALES (1) ↔ (N) INVENTARIO
+Registrar empleados y asignarlos a proyectos con roles específicos.
 
----
+Controlar materiales disponibles en stock y su uso en proyectos.
 
-##  Modelo Físico Implementado
+Impedir asignación de materiales si no hay stock suficiente.
 
-### Características de la Base de Datos
+Generar reportes de proyectos activos, empleados asignados, materiales utilizados y proyectos con mayor presupuesto.
 
-- **Motor**: MySQL 8.0+
-- **Codificación**: UTF-8
-- **Tablas**: 8 tablas principales
-- **Restricciones**: Claves primarias, foráneas y checks
-- **Índices**: Optimizados para consultas frecuentes
+Necesidades de información:
 
-### Tablas Principales
+Datos del cliente: nombre, RUC/CI, correo, dirección, teléfono.
 
-| Tabla | Propósito | Registros Estimados |
-|-------|-----------|-------------------|
-| `proyectos` | Gestión de obras | 50-200 |
-| `personal` | Recursos humanos | 100-500 |
-| `materiales` | Catálogo de insumos | 200-1000 |
-| `tareas` | Cronograma detallado | 500-2000 |
-| `asignaciones` | Personal por tarea | 1000-5000 |
-| `inventario` | Stock por proyecto | 1000-3000 |
-| `gastos` | Control financiero | 2000-10000 |
-| `documentos` | Archivos técnicos | 500-2000 |
+Información de proyectos: nombre, descripción, fecha inicio/fin, presupuesto, cliente asociado.
 
----
+Información de empleados: nombre, cargo, salario.
 
-##  Procedimientos Almacenados con Validaciones
+Información de materiales: nombre, unidad, precio unitario, stock disponible.
 
-### Procedimientos Implementados
+Asignación de empleados y materiales en proyectos.
 
-1. **`sp_crear_proyecto`** - Registra nuevos proyectos
-   - Validaciones: fechas, presupuesto, código único
-   - Control de integridad referencial
+3. Modelo Conceptual (Entidades, atributos y relaciones)
+Entidades principales
 
-2. **`sp_registrar_personal`** - Gestiona empleados
-   - Validaciones: cédula, email, especialidad
-   - Control de duplicados
+Cliente
 
-3. **`sp_crear_tarea`** - Administra cronogramas
-   - Validaciones: fechas lógicas, prioridades
-   - Verificación de estado del proyecto
+id, nombre, ruc_ci, email, direccion, telefono
 
-4. **`sp_registrar_gasto`** - Control financiero
-   - Validaciones: montos, tipos de gasto
-   - Alertas de sobrepresupuesto
+Proyecto
 
-### Características de Validación
+id, nombre, descripcion, fecha_inicio, fecha_fin, presupuesto, cliente_id
 
-- ✅ **Manejo de transacciones** con ROLLBACK automático
-- ✅ **Validación de tipos de datos** y rangos
-- ✅ **Control de integridad referencial**
-- ✅ **Mensajes de error descriptivos**
--  **Verificación de reglas de negocio**
+Empleado
 
----
+id, nombre, cargo, salario
 
-## Consultas SQL - Reportes de la Problemática
+Asignación (relación Empleado–Proyecto)
 
-### Reportes Implementados
+id, proyecto_id, empleado_id, rol
 
-#### 1.  **Dashboard de Proyectos**
-```sql
--- Estado general con indicadores financieros y de progreso
--- Muestra: presupuesto vs gastado, % completado, días restantes
-```
-- **Propósito**: Vista ejecutiva del estado de todas las obras
-- **Información**: Presupuesto, gastos, avance, cronograma
+Material
 
-#### 2.  **Control de Inventario**
-```sql
--- Inventario por proyecto con alertas de stock
--- Muestra: materiales necesarios, disponibles, faltantes
-```
-- **Propósito**: Evitar paros por falta de materiales
-- **Información**: Stock actual, necesidades, valores
+id, nombre, unidad, precio_unitario, stock
 
-#### 3.  **Productividad del Personal**
-```sql
--- Análisis de eficiencia y costos de mano de obra
--- Muestra: horas trabajadas vs asignadas, costo total
-```
-- **Propósito**: Optimizar recursos humanos
-- **Información**: Eficiencia, costos, especialidades
+Uso_Material (relación Proyecto–Material)
 
-#### 4.  **Tareas Críticas y Retrasos**
-```sql
--- Cronograma con alertas de retraso
--- Muestra: tareas vencidas, prioridades, personal asignado
-```
-- **Propósito**: Control de cronograma y calidad
-- **Información**: Retrasos, responsables, prioridades
+id, proyecto_id, material_id, cantidad
 
-#### 5.  **Análisis Financiero**
-```sql
--- Gastos detallados por tipo y proyecto
--- Muestra: distribución de gastos, tendencias
-```
-- **Propósito**: Control de costos y presupuestos
-- **Información**: Gastos por categoría, tendencias
+Relaciones principales
 
-#### 6.  **Control de Documentación**
-```sql
--- Seguimiento de planos, licencias y documentos
--- Muestra: documentos por proyecto, versiones
-```
-- **Propósito**: Organización de archivos técnicos
-- **Información**: Tipos de documentos, versiones
+Un cliente puede tener varios proyectos (1:N).
 
----
+Un proyecto puede tener varios empleados asignados (N:M mediante Asignaciones).
 
-##  Datos de Prueba
+Un proyecto puede usar varios materiales (N:M mediante Uso_Materiales).
 
-### Personal de Prueba Cargado
-- **Arquitecto**: Juan Pérez ($25/hora)
-- **Ingeniero Civil**: María González ($22/hora) 
-- **Maestro de Obra**: Carlos Rodríguez ($18/hora)
-- **Electricista**: Ana López ($20/hora)
+📌 Diagrama simplificado:
+Clientes (1) --- (N) Proyectos (1) --- (N) Asignaciones (N) --- (1) Empleados
+Proyectos (1) --- (N) Uso_Materiales (N) --- (1) Materiales
 
-### Proyectos de Prueba
-- **PROJ001**: Edificio Residencial Los Pinos ($250,000)
-- **PROJ002**: Casa Campestre Villa María ($85,000)
+Preguntas clave del proyecto
 
-### Materiales Base
-- Cemento Portland, Varilla 12mm, Bloques 15cm, Cable 12AWG
+¿Qué es?
+Es un sistema de gestión de proyectos de construcción que organiza clientes, proyectos, empleados y materiales, facilitando el control del proceso constructivo.
 
----
+¿Para qué sirve?
+Sirve para administrar información clave en el desarrollo de proyectos de construcción, optimizar el uso de materiales, organizar al personal y mejorar la toma de decisiones financieras y logísticas.
 
-##  Capturas de Pantalla
-
-### Estructura de Capturas Requeridas
-
-1. ** Ejecución Scripts DDL**
-   - Creación de base de datos
-   - Creación de tablas
-   - Verificación de estructura
-
-2. **⚙ Procedimientos Almacenados**
-   - Código de procedimientos
-   - Ejecución exitosa
-   - Manejo de errores
-
-3. ** Consultas y Reportes**
-   - Resultado de cada consulta
-   - Datos de ejemplo
-   - Interpretación de resultados
-
-4. **Validaciones**
-   - Pruebas de integridad
-   - Mensajes de error
-   - Control de duplicados
-
----
-
-##
+¿Para quién está dirigido?
+Está dirigido a empresas constructoras, estudios de arquitectura e ingenierías que necesiten un sistema robusto y escalable para controlar su gestión.
