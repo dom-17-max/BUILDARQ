@@ -6,7 +6,7 @@ BUILDARQ – Gestión de Proyectos de Construcción
 
 Proyecto ABP centrado en crear un modelo de base de datos que administre de forma efectiva la gestión de proyectos de construcción. Permite registrar clientes, empleados, materiales, proyectos y sus asignaciones. Además, controla el uso de materiales, calcula presupuestos y genera reportes clave para la toma de decisiones. Es ideal para empresas constructoras, estudios de arquitectura o ingenierías civiles.
 
-Integrantes:
+## Integrantes:
 Medrano
 Reyes
 Burgos
